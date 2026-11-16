@@ -41,16 +41,21 @@ document.addEventListener("click", e => {
 });
 
 /* ── سیستم ظهور ── */
+function reveal(el) {
+  if (el.classList.contains("rv-in") || el.classList.contains("rv-done")) return;
+  el.classList.add("rv-in");
+  const done = () => { el.classList.remove("rv-in"); el.classList.add("rv-done"); };
+  const h = ev => { if (ev.target !== el) return; el.removeEventListener("animationend", h); done(); };
+  el.addEventListener("animationend", h);
+  /* حتی اگر رویداد animationend شفاف نشود، پس از مهلت امن عنصر نمایان می‌ماند */
+  setTimeout(() => { if (el.classList.contains("rv-in")) done(); }, 1800 + (+el.dataset.d || 0) * 95);
+}
 const rio = new IntersectionObserver(entries => {
   entries.forEach(en => {
     if (!en.isIntersecting) return;
     const el = en.target;
     rio.unobserve(el);
-    el.classList.add("rv-in");
-    const done = () => { el.classList.remove("rv-in"); el.classList.add("rv-done"); };
-    const h = ev => { if (ev.target !== el) return; el.removeEventListener("animationend", h); done(); };
-    el.addEventListener("animationend", h);
-    setTimeout(() => { if (el.classList.contains("rv-in")) done(); }, 1800 + (+el.dataset.d || 0) * 95);
+    reveal(el);
   });
 }, { root: VP, threshold: 0.18 });
 
@@ -60,6 +65,12 @@ function bindReveals(scope) {
     el.dataset.rvBound = "1";
     if (RM) { el.classList.add("rv-done"); return; }
     el.style.setProperty("--d", el.dataset.d || "0");
+    /* اگر عنصر پیش از اتصال ناظر، داخل دید بود، همین حالا ظاهرش کن */
+    if (el.getBoundingClientRect().height > 0) {
+      const er = el.getBoundingClientRect(), vr = VP.getBoundingClientRect();
+      const visTop = Math.max(er.top, vr.top), visBot = Math.min(er.bottom, vr.bottom);
+      if (visBot > visTop && (visBot - visTop) / er.height >= 0.18) { reveal(el); return; }
+    }
     rio.observe(el);
   });
 }
@@ -414,11 +425,10 @@ function initCountdown() {
     if (diff <= 0) { diff = 0; $("#deadline").classList.add("ended"); if (cdTimer) clearInterval(cdTimer); }
     setUnit("#cdD", Math.floor(diff / 864e5));
     setUnit("#cdH", Math.floor(diff / 36e5) % 24);
-    setUnit("#cdM", Math.floor(diff / 6e4) % 60);
-    setUnit("#cdS", Math.floor(diff / 1e3) % 60);
   };
   tick();
-  cdTimer = setInterval(tick, 1000);
+  /* چون تنها روز و ساعت نمایش داده می‌شود، به‌روزرسانی هر دقیقه کافی است */
+  cdTimer = setInterval(tick, 60000);
 }
 
 /* ── اخبار ── */
