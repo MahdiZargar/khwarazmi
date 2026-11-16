@@ -41,7 +41,10 @@ h2{font-weight:900;font-size:clamp(1.75rem,3.4vw,2.7rem);line-height:1.4;margin:
 [data-rv="mask"].rv-in{animation-name:rvMask;animation-duration:1s}
 [data-rv="blur"].rv-in{animation-name:rvBlur}
 [data-rv="flip"].rv-in{animation-name:rvFlip}
-.rv-done{opacity:1}
+.rv-done{opacity:1;clip-path:none!important;transform:none!important;filter:none!important}
+/* اطمینان از ماندگاری ظهور: پس از پایان انیمیشن، عنصر نباید دوباره مخفی شود */
+[data-rv="mask"].rv-done{opacity:1;clip-path:inset(-20% -20% -20% -20%)}
+.d-none{display:none!important}
 @keyframes rvUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
 @keyframes rvFade{from{opacity:0}to{opacity:1}}
 @keyframes rvZoom{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
